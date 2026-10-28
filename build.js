@@ -6,12 +6,20 @@ import process from 'node:process';
 import os from 'node:os';
 
 import copy from 'esbuild-plugin-copy';
+import { sassPlugin } from 'esbuild-sass-plugin';
 
-import { cleanPlugin } from './pkg/lib/esbuild-cleanup-plugin.js';
-import { cockpitCompressPlugin } from './pkg/lib/esbuild-compress-plugin.js';
-import { cockpitPoEsbuildPlugin } from './pkg/lib/cockpit-po-plugin.js';
-import { cockpitRsyncEsbuildPlugin } from './pkg/lib/cockpit-rsync-plugin.js';
-import { esbuildStylesPlugins } from './pkg/lib/esbuild-common.js';
+const cockpitLibPath = fs.existsSync('./pkg/lib/cockpit-po-plugin.js') ? './pkg/lib' : '../../cockpit/pkg/lib';
+const [
+    { cleanPlugin },
+    { cockpitCompressPlugin },
+    { cockpitPoEsbuildPlugin },
+    { cockpitRsyncEsbuildPlugin },
+] = await Promise.all([
+    import(`${cockpitLibPath}/esbuild-cleanup-plugin.js`),
+    import(`${cockpitLibPath}/esbuild-compress-plugin.js`),
+    import(`${cockpitLibPath}/cockpit-po-plugin.js`),
+    import(`${cockpitLibPath}/cockpit-rsync-plugin.js`),
+]);
 
 const production = process.env.NODE_ENV === 'production';
 const useWasm = os.arch() !== 'x64';
@@ -27,7 +35,7 @@ if (args.rsync)
     process.env.RSYNC = args.rsync;
 
 // List of directories to use when using import statements
-const nodePaths = ['pkg/lib'];
+const nodePaths = [cockpitLibPath];
 const outdir = 'dist';
 
 // Obtain package name from package.json
@@ -98,7 +106,11 @@ const context = await esbuild.context({
                 { from: ['./src/index.html'], to: ['./index.html'] },
             ]
         }),
-        ...esbuildStylesPlugins,
+        sassPlugin({
+            loadPaths: [...nodePaths, 'node_modules'],
+            filter: /\.scss/,
+            quietDeps: true,
+        }),
         cockpitPoEsbuildPlugin(),
         ...production ? [cockpitCompressPlugin()] : [],
         cockpitRsyncEsbuildPlugin({ dest: packageJson.name }),

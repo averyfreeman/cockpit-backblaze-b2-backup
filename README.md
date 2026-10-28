@@ -1,6 +1,6 @@
 # Cockpit Backblaze B2
 
-This is a simple Backblaze B2 backup module for [Cockpit](https://cockpit-project.org).
+This is a maintained fork of [rabol/backblaze-b2](https://github.com/rabol/backblaze-b2), a Backblaze B2 backup module for [Cockpit](https://cockpit-project.org).
 
 It uses [Cockpit Starter Kit](https://github.com/cockpit-project/starter-kit) as a base
 
@@ -104,8 +104,8 @@ Only allow trusted users to access /etc/cockpit-backblaze-b2.
 Clone this repository to your system:
 
 ```sh
-git clone https://github.com/rabol/backblaze-b2.git
-cd backblaze-b2
+git clone https://github.com/averyfreeman/cockpit-backblaze-b2-backup.git
+cd cockpit-backblaze-b2-backup
 ```
 
 
